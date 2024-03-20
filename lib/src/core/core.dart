@@ -55,6 +55,9 @@ abstract final class CastScreen {
     Duration timeout,
     Function(Exception) onError,
   ) async {
+    // First clear _clients & _devices
+    _clients.clear();
+    _devices.clear();
     await _init(ipv4, ipv6, port, fetchDevice, onError);
     _search(ST);
     await Future.delayed(timeout, () => {});
@@ -215,7 +218,7 @@ abstract final class CastScreen {
     buf.write('MAN: "ssdp:discover"\r\n');
     buf.write('MX: 1\r\n');
     buf.write('ST: $ST\r\n');
-    buf.write('USER-AGENT: castscreen(dart)/1.0.0\r\n\r\n');
+    buf.write('USER-AGENT: castscreen for dart \r\n\r\n');
     final data = utf8.encode(buf.toString());
     buf.clear();
     for (var socket in _sockets) {

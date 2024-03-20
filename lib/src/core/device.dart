@@ -67,7 +67,7 @@
 
 part of 'lib.dart';
 
-/// The discovered device
+/// The discover device
 final class Device {
   /// The device's client
   final Client client;
@@ -141,7 +141,7 @@ final _svcMap = {
   'RController': 'urn:upnp-org:serviceId:RController'
 };
 
-/// The discovered device spec
+/// The discover device spec
 final class DeviceSpec {
   /// The urn of this type of device
   final String deviceType;

@@ -1,6 +1,6 @@
 name: castscreen
 description: A dart package can cast video streams to UPnP & DLNA devices.
-version: 1.0.0
+version: 1.0.2
 repository: https://github.com/rwscode/dart_castscreen
 
 environment:
