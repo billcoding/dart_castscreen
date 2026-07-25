@@ -1,6 +1,8 @@
-# dart_castscreen
+# castscreen
 
 A dart package can cast video streams to UPnP & DLNA devices.
+
+[![pub package](https://img.shields.io/pub/v/castscreen.svg)](https://pub.dartlang.org/packages/castscreen)
 
 ## Features
 - Discover UPnP Client/Device

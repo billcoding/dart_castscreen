@@ -2,8 +2,11 @@
 
 part of 'lib.dart';
 
-final InternetAddress _multicastV4 = InternetAddress('239.255.255.250');
-final InternetAddress _multicastV6 = InternetAddress('FF05::C');
+final _multicastV4Addr = '238.255.255.250';
+// final _multicastV4Addr = '239.255.255.250';
+final _multicastV6Addr = 'FF05::C';
+final InternetAddress _multicastV4 = InternetAddress(_multicastV4Addr);
+final InternetAddress _multicastV6 = InternetAddress(_multicastV6Addr);
 
 const _ipv4 = true;
 const _ipv6 = false;
@@ -59,7 +62,7 @@ abstract final class CastScreen {
     _clients.clear();
     _devices.clear();
     await _init(ipv4, ipv6, port, fetchDevice, onError);
-    _search(ST);
+    _search(port, ST);
     await Future.delayed(timeout, () => {});
     _stop();
   }
@@ -76,20 +79,10 @@ abstract final class CastScreen {
     final ifs = await NetworkInterface.list();
     _interfaces.addAll(ifs);
     if (ipv4) {
-      await _createSocket(
-        InternetAddress.anyIPv4,
-        port,
-        fetchDevice,
-        onError,
-      );
+      await _createSocket(InternetAddress.anyIPv4, port, fetchDevice, onError);
     }
     if (ipv6) {
-      await _createSocket(
-        InternetAddress.anyIPv6,
-        port,
-        fetchDevice,
-        onError,
-      );
+      await _createSocket(InternetAddress.anyIPv6, port, fetchDevice, onError);
     }
   }
 
@@ -107,9 +100,9 @@ abstract final class CastScreen {
       reuseAddress: true,
       reusePort: reusePort,
     );
-    socket.broadcastEnabled = true;
-    socket.readEventsEnabled = true;
-    socket.multicastHops = 50;
+    // socket.broadcastEnabled = true;
+    // socket.readEventsEnabled = true;
+    // socket.multicastHops = 50;
     socket.listen((event) => _listenHandler(socket, event, fetchDevice));
     for (var iF in _interfaces) {
       switch (address.type) {
@@ -132,8 +125,8 @@ abstract final class CastScreen {
     switch (event) {
       case RawSocketEvent.read:
         final packet = socket.receive();
-        socket.writeEventsEnabled = true;
-        socket.readEventsEnabled = true;
+        // socket.writeEventsEnabled = true;
+        // socket.readEventsEnabled = true;
         if (packet == null) return;
         final data = utf8.decode(packet.data);
         final parts = data.split('\r\n');
@@ -191,9 +184,8 @@ abstract final class CastScreen {
             _multicastV4.rawAddress + iF.addresses[0].rawAddress);
         socket.setRawOption(
             RawSocketOption(RawSocketOption.levelIPv4, 12, value));
-      } else {
-        socket.joinMulticast(_multicastV4, iF);
       }
+      socket.joinMulticast(_multicastV4, iF);
     } on Exception catch (e) {
       onError(Exception('proto: IPv4, IF: ${iF.name}, $e'));
     }
@@ -211,10 +203,10 @@ abstract final class CastScreen {
     }
   }
 
-  static void _search(String ST) {
+  static void _search(int port, String ST) {
     final buf = StringBuffer();
     buf.write('M-SEARCH * HTTP/1.1\r\n');
-    buf.write('HOST: 239.255.255.250:1900\r\n');
+    buf.write('HOST: $_multicastV4Addr:$port\r\n');
     buf.write('MAN: "ssdp:discover"\r\n');
     buf.write('MX: 1\r\n');
     buf.write('ST: $ST\r\n');
@@ -223,10 +215,10 @@ abstract final class CastScreen {
     buf.clear();
     for (var socket in _sockets) {
       if (socket.address.type == _multicastV4.type) {
-        socket.send(data, _multicastV4, 1900);
+        socket.send(data, _multicastV4, port);
       }
       if (socket.address.type == _multicastV6.type) {
-        socket.send(data, _multicastV6, 1900);
+        socket.send(data, _multicastV6, port);
       }
     }
   }
